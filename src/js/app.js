@@ -1,6 +1,8 @@
 import '../scss/app.scss';
 
-/* Your JS Code goes here */
 
-/* Demo JS */
+import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
+import * as tf from '@tensorflow/tfjs-core';
+// Register WebGL backend.
+import '@tensorflow/tfjs-backend-webgl';
 import './demo.js';
