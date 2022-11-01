@@ -48,12 +48,6 @@ async function Run() {
     // Setting up the Threejs scene: 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, video.width / video.height, 0.001, 1000);
-
-
-    // const camera = new THREE.OrthographicCamera( video.width / - 2, video.width / 2, video.height / 2, video.height / - 2, 1, 1000 );
-    // scene.add(camera)
-
-    // const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, 1000);
     camera.position.z = 2;
     const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setClearColor(0x000000, 0); // the default
@@ -125,19 +119,6 @@ async function Run() {
         }
     );
 
-
-
-
-
-    // const geometry1 = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    // const material1 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    // const box1 = new THREE.Mesh(geometry1, material1);
-    // scene.add(box1);
-    // box.add(box1);
-
-
-
-
     async function update() {
         // console.log('this is the update function');
 
@@ -149,23 +130,10 @@ async function Run() {
 
             var wristVec = new THREE.Vector3(-hands[0].keypoints[0].x, hands[0].keypoints[0].y, 0.5);
             var MiddleRootVec = new THREE.Vector3(-hands[0].keypoints[9].x, hands[0].keypoints[9].y, 0.5);
-            var indexRootVec = new THREE.Vector3(-hands[0].keypoints[5].x, hands[0].keypoints[5].y, 0.5);
 
             var vecDistance = wristVec.distanceTo(MiddleRootVec);
-            // var qt = new THREE.Quaternion();
-            // qt.setFromUnitVectors(wristVec,indexRootVec);
-
-            // var rotationMatrix = new THREE.Matrix4();
-            // rotationMatrix.makeRotationFromQuaternion(qt);
-
-            // console.log(x,y,z);
             let vec = new THREE.Vector3();
             let pos = new THREE.Vector3();
-
-            // console.log(getSceneToWorld(x,y));
-
-            var mx = new THREE.Matrix4().lookAt(wristVec, MiddleRootVec, new THREE.Vector3(0, 1, 0));
-            var qt = new THREE.Quaternion().setFromRotationMatrix(mx);
 
             vec.set(
                 (x / video.width) * 2 - 1,
@@ -177,10 +145,6 @@ async function Run() {
             pos.copy(camera.position).add(vec.multiplyScalar(distance));
             box.position.x = pos.x;
             box.position.y = pos.y;
-            // box1.position.x = -(hands[0].keypoints3D[0].x * (video.width/ video.height)) * 2.0;
-            // box1.position.y = -(hands[0].keypoints3D[0].y * (video.width/ video.height)) * 2.0;
-            // box1.position.z = -(hands[0].keypoints3D[0].z * (video.width/ video.height)) * 2.0;
-            // box.quaternion.copy(qt);
 
 
             var screenRatio = null;
@@ -191,75 +155,38 @@ async function Run() {
                 screenRatio = video.height / video.width;
             }
 
-
             newScale = vecDistance * screenRatio * 0.005;
-
             box.scale.set(newScale, newScale, newScale);
 
-
-            // var rotationVec = new THREE.Vector3();
-            // rotationVec.subVectors(hands[0].keypoints3D[5], hands[0].keypoints3D[17]);
-            // // var _xRotationDegree = map(-rotationVec.x,[-1,1],[0,90]);
-            // console.log(rotationVec.x * 10);
-            // box.rotation.z += (-(rotationVec.x * 10)) * screenRatio;
-            // box.rotation.z += (rotationVec.y * 10) * screenRatio;
-            // console.log(box.rotation.z);
-
-
+            // for back of the hand
 
             // var handOrientation = calcOrientation(new THREE.Vector3(hands[0].keypoints3D[0].x, hands[0].keypoints3D[0].y, hands[0].keypoints3D[0].z),
             //     new THREE.Vector3(hands[0].keypoints3D[5].x, hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z),
             //     new THREE.Vector3(hands[0].keypoints3D[17].x, hands[0].keypoints3D[17].y, hands[0].keypoints3D[17].z));
 
+            // for front of the hand
                 
             var handOrientation = calcOrientationReverse(new THREE.Vector3(hands[0].keypoints3D[0].x, hands[0].keypoints3D[0].y, hands[0].keypoints3D[0].z),
             new THREE.Vector3(hands[0].keypoints3D[5].x, hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z),
             new THREE.Vector3(hands[0].keypoints3D[17].x, hands[0].keypoints3D[17].y, hands[0].keypoints3D[17].z));
-
-            // var handOrientation = calcOrientation(new THREE.Vector3(hands[0].keypoints[0].x, hands[0].keypoints[0].y, 0.5),
-            //     new THREE.Vector3(hands[0].keypoints[5].x, hands[0].keypoints[5].y, 0.5),
-            //     new THREE.Vector3(hands[0].keypoints[17].x, hands[0].keypoints[17].y, 0.5));
 
             console.log(handOrientation.z);
 
             box.lookAt(handOrientation);
 
 
+            //Visializing the Vector Direction
             const dir = handOrientation;
-
-//normalize the direction vector (convert to vector of length 1)
             dir.normalize();
-
             const origin = box.position;
             const length = 1;
             const hex = 0xffff00;
-
             const arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex );
+            
             scene.add( arrowHelper );   
-
             setTimeout(()=>{
                 scene.remove(arrowHelper);
             }, 1000)
-
-            // var _quater = quaternionFromNormal(handOrientation);
-            // console.log(_quater);
-            // box.quaternion.set(_quater);
-
-
-            // const A = new THREE.Vector3(hands[0].keypoints3D[0].x, hands[0].keypoints3D[0].y, hands[0].keypoints3D[0].z);
-            // const B = new THREE.Vector3(hands[0].keypoints3D[5].x, hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z);
-            // // Get normal A->B
-            // const normal = B.clone().sub(A).normalize();
-
-            // // Get orientation
-            // const quaternion = quaternionFromNormal(handOrientation);
-
-            // // Apply orientation to mesh
-            // box.quaternion.copy(quaternion);
-
-            // var _eular = new THREE.Euler(handOrientation.x, handOrientation.y, handOrientation.z);
-            // box.quaternion.setFromEuler(_eular, true);
-
 
         } else {
 
@@ -287,8 +214,6 @@ async function Run() {
             (keyPoint1.x * keyPoint2.y) - (keyPoint1.y * keyPoint2.x)
         );
 
-        // normalVector.sub(box.position);
-
         normalVector.normalize();
         return normalVector;
     }
@@ -307,23 +232,6 @@ async function Run() {
         normalVector.normalize();
         return normalVector;
     }
-
-    function calcCentroid(CP0, CP5, CP17) {
-        var x = (CP0.x + CP5.x + CP17.x) / 3;
-        var y = (CP0.y + CP5.y + CP17.y) / 3;
-        var z = (CP0.z + CP5.z + CP17.z) / 3;
-        return new THREE.Vector3(x,y,z);
-    }
-
-    function map(value, oldRange, newRange) {
-        var newValue = (value - oldRange[0]) * (newRange[1] - newRange[0]) / (oldRange[1] - oldRange[0]) + newRange[0];
-        return Math.min(Math.max(newValue, newRange[0]), newRange[1]);
-    }
-
-
-
-
 }
-
 
 Run();
