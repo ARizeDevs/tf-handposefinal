@@ -48,6 +48,11 @@ async function Run() {
     // Setting up the Threejs scene: 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, video.width / video.height, 0.001, 1000);
+
+
+    // const camera = new THREE.OrthographicCamera( video.width / - 2, video.width / 2, video.height / 2, video.height / - 2, 1, 1000 );
+    // scene.add(camera)
+
     // const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, 1000);
     camera.position.z = 2;
     const renderer = new THREE.WebGLRenderer({ alpha: true });
@@ -69,56 +74,56 @@ async function Run() {
 
     // let box = new THREE.Object3D()
 
-    // const loader = new GLTFLoader();
+    const loader = new GLTFLoader();
 
     // Load a glTF resource
-    // loader.load(
-    //     // resource URL
-    //     'https://firebasestorage.googleapis.com/v0/b/tripleearplatform.appspot.com/o/TestGLB%2Fapplewatch.glb?alt=media&token=40454859-2a33-46e5-9bf2-7bfd728f5a71',
-    //     // 'https://firebasestorage.googleapis.com/v0/b/tripleearplatform.appspot.com/o/TestGLB%2Fwatch%2Fscene.gltf?alt=media&token=cbd75ea2-9525-47bc-981c-8e3f5d4a2af6',
-    //     // called when the resource is loaded
-    //     function (gltf) {
-    //         const watch = gltf.scene
+    loader.load(
+        // resource URL
+        'https://firebasestorage.googleapis.com/v0/b/tripleearplatform.appspot.com/o/TestGLB%2Fapplewatch.glb?alt=media&token=40454859-2a33-46e5-9bf2-7bfd728f5a71',
+        // 'https://firebasestorage.googleapis.com/v0/b/tripleearplatform.appspot.com/o/TestGLB%2Fwatch%2Fscene.gltf?alt=media&token=cbd75ea2-9525-47bc-981c-8e3f5d4a2af6',
+        // called when the resource is loaded
+        function (gltf) {
+            const watch = gltf.scene
 
-    //         watch.scale.set(5, 5, 5)
-    //         watch.rotation.set(5, 5, 5)
+            watch.scale.set(5, 5, 5)
+            watch.rotation.set(5, 5, 5)
 
 
-    //         let ambientLight = new THREE.AmbientLight(new THREE.Color('hsl(0, 0%, 100%)'), 0.75);
-    //         gltf.scene.add(ambientLight);
+            let ambientLight = new THREE.AmbientLight(new THREE.Color('hsl(0, 0%, 100%)'), 0.75);
+            gltf.scene.add(ambientLight);
 
-    //         let directionalLightBack = new THREE.DirectionalLight(new THREE.Color('hsl(0, 0%, 100%)'), 0.25);
-    //         directionalLightBack.position.set(30, 100, 100);
-    //         gltf.scene.add(directionalLightBack);
+            let directionalLightBack = new THREE.DirectionalLight(new THREE.Color('hsl(0, 0%, 100%)'), 0.25);
+            directionalLightBack.position.set(30, 100, 100);
+            gltf.scene.add(directionalLightBack);
 
-    //         let directionalLightFront = new THREE.DirectionalLight(new THREE.Color('hsl(0, 0%, 100%)'), 0.25);
-    //         directionalLightFront.position.set(-30, 100, -100);
-    //         gltf.scene.add(directionalLightFront);
+            let directionalLightFront = new THREE.DirectionalLight(new THREE.Color('hsl(0, 0%, 100%)'), 0.25);
+            directionalLightFront.position.set(-30, 100, -100);
+            gltf.scene.add(directionalLightFront);
 
-    //         console.log(watch);
-    //         // scene.add( gltf.scene );
-    //         box.add(watch);
+            console.log(watch);
+            // scene.add( gltf.scene );
+            box.add(watch);
 
-    //         gltf.animations; // Array<THREE.AnimationClip>
-    //         gltf.scene; // THREE.Group
-    //         gltf.scenes; // Array<THREE.Group>
-    //         gltf.cameras; // Array<THREE.Camera>
-    //         gltf.asset; // Object
+            gltf.animations; // Array<THREE.AnimationClip>
+            gltf.scene; // THREE.Group
+            gltf.scenes; // Array<THREE.Group>
+            gltf.cameras; // Array<THREE.Camera>
+            gltf.asset; // Object
 
-    //     },
-    //     // called while loading is progressing
-    //     function (xhr) {
+        },
+        // called while loading is progressing
+        function (xhr) {
 
-    //         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
 
-    //     },
-    //     // called when loading has errors
-    //     function (error) {
+        },
+        // called when loading has errors
+        function (error) {
 
-    //         console.log('An error happened');
+            console.log('An error happened');
 
-    //     }
-    // );
+        }
+    );
 
 
 
