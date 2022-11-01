@@ -82,6 +82,7 @@
   },
   "target": "web",
   "dependencies": {
-    "@tensorflow-models/hand-pose-detection": "^2.0.0"
+    "@tensorflow-models/hand-pose-detection": "^2.0.0",
+    "three-quaternion-from-normal": "^1.0.0"
   }
 }
