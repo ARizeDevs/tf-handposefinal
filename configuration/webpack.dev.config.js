@@ -24,6 +24,8 @@ module.exports = merge(webpackConfiguration, {
     compress: true,
     hot: false,
     ...environment.server,
+    host: '0.0.0.0',
+    server: 'https',
   },
 
   /* File watcher options */
