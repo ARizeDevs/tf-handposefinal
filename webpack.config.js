@@ -12,19 +12,26 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const environment = require('./configuration/environment');
 
-const templateFiles = fs.readdirSync(environment.paths.source)
-  .filter((file) => ['.html', '.ejs'].includes(path.extname(file).toLowerCase())).map((filename) => ({
+const templateFiles = fs
+  .readdirSync(environment.paths.source)
+  .filter((file) =>
+    ['.html', '.ejs'].includes(path.extname(file).toLowerCase())
+  )
+  .map((filename) => ({
     input: filename,
     output: filename.replace(/\.ejs$/, '.html'),
   }));
 
-const htmlPluginEntries = templateFiles.map((template) => new HTMLWebpackPlugin({
-  inject: true,
-  hash: false,
-  filename: template.output,
-  template: path.resolve(environment.paths.source, template.input),
-  favicon: path.resolve(environment.paths.source, 'images', 'favicon.ico'),
-}));
+const htmlPluginEntries = templateFiles.map(
+  (template) =>
+    new HTMLWebpackPlugin({
+      inject: true,
+      hash: false,
+      filename: template.output,
+      template: path.resolve(environment.paths.source, template.input),
+      favicon: path.resolve(environment.paths.source, 'images', 'favicon.ico'),
+    })
+);
 
 module.exports = {
   entry: {
@@ -38,7 +45,12 @@ module.exports = {
     rules: [
       {
         test: /\.((c|sa|sc)ss)$/i,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'sass-loader'],
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'postcss-loader',
+          'sass-loader',
+        ],
       },
       {
         test: /\.js$/,
@@ -112,6 +124,11 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
+        {
+          from: 'src/models',
+          to: 'models',
+          toType: 'dir',
+        },
         {
           from: path.resolve(environment.paths.source, 'images', 'content'),
           to: path.resolve(environment.paths.output, 'images', 'content'),
