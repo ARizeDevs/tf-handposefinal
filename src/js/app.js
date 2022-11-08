@@ -197,13 +197,27 @@ async function Run() {
       plane.scale.set(newScale, newScale, newScale);
 
       // for palm of the hand
-
-      var handOrientation = calcOrientationReverse(new THREE.Vector3(hands[0].keypoints3D[0].x, hands[0].keypoints3D[0].y, hands[0].keypoints3D[0].z),
+      const handStatus = getHandStatus(hands[0]);
+      if(handStatus === "left-back" || handStatus === "right-palm"){
+        var handOrientation = calcOrientation(new THREE.Vector3(hands[0].keypoints3D[0].x, hands[0].keypoints3D[0].y, hands[0].keypoints3D[0].z),
         new THREE.Vector3(hands[0].keypoints3D[5].x, hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z),
         new THREE.Vector3(hands[0].keypoints3D[17].x, hands[0].keypoints3D[17].y, hands[0].keypoints3D[17].z));
+      } else {
+        var handOrientation = calcOrientationReverse(new THREE.Vector3(hands[0].keypoints3D[0].x, hands[0].keypoints3D[0].y, hands[0].keypoints3D[0].z),
+        new THREE.Vector3(hands[0].keypoints3D[5].x, hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z),
+        new THREE.Vector3(hands[0].keypoints3D[17].x, hands[0].keypoints3D[17].y, hands[0].keypoints3D[17].z));
+      }
 
+      console.log(handOrientation.y);
+
+      console.log(handStatus);
 
       // for back of the hand
+      //   var handOrientation = calcOrientation(new THREE.Vector3(hands[0].keypoints[0].x, hands[0].keypoints[0].y, 0.5),
+      //     new THREE.Vector3(hands[0].keypoints[5].x, hands[0].keypoints[5].y, 0.5),
+      //     new THREE.Vector3(hands[0].keypoints[17].x, hands[0].keypoints[17].y, 0.5));
+
+
 
       // let handOrientation = calcOrientationReverse(
       //   new THREE.Vector3(
@@ -261,13 +275,13 @@ async function Run() {
     const c0 = hand.keypoints3D[0];
     const c5 = hand.keypoints3D[5];
     const c17 = hand.keypoints3D[17];
-    if (handedness === 'Right') {
+    if (handedness === 'Left') {
       if (c5.x > c17.x) return 'right-palm';
       else return 'right-back';
     }
     else {
-      if (c5.x > c17.x) return 'left-b';
-      else return 'left-back';
+      if (c5.x > c17.x) return 'left-back';
+      else return 'left-palm';
     }
 
   }
