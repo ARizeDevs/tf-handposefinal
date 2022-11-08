@@ -2,6 +2,7 @@ import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
 import '@tensorflow/tfjs-backend-webgl'; // Register WebGL backend.
 import '../scss/app.scss';
 import { GUI } from 'dat.gui';
+import { PlatformBrowser } from '@tensorflow/tfjs-core/dist/platforms/platform_browser';
 
 const THREE = require('three');
 const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader');
@@ -116,25 +117,25 @@ async function Run() {
       watchFolder.add(watchRotation, 'z', 0, 360, 1);
       watchFolder.open();
 
-      let ambientLight = new THREE.AmbientLight(
-        new THREE.Color('hsl(0, 0%, 100%)'),
-        0.75
-      );
-      gltf.scene.add(ambientLight);
+      // let ambientLight = new THREE.AmbientLight(
+      //   new THREE.Color('hsl(0, 0%, 100%)'),
+      //   0.75
+      // );
+      // gltf.scene.add(ambientLight);
 
-      let directionalLightBack = new THREE.DirectionalLight(
-        new THREE.Color('hsl(0, 0%, 100%)'),
-        0.25
-      );
-      directionalLightBack.position.set(30, 100, 100);
-      gltf.scene.add(directionalLightBack);
+      // let directionalLightBack = new THREE.DirectionalLight(
+      //   new THREE.Color('hsl(0, 0%, 100%)'),
+      //   0.25
+      // );
+      // directionalLightBack.position.set(30, 100, 100);
+      // gltf.scene.add(directionalLightBack);
 
-      let directionalLightFront = new THREE.DirectionalLight(
-        new THREE.Color('hsl(0, 0%, 100%)'),
-        0.25
-      );
-      directionalLightFront.position.set(-30, 100, -100);
-      gltf.scene.add(directionalLightFront);
+      // let directionalLightFront = new THREE.DirectionalLight(
+      //   new THREE.Color('hsl(0, 0%, 100%)'),
+      //   0.25
+      // );
+      // directionalLightFront.position.set(-30, 100, -100);
+      // gltf.scene.add(directionalLightFront);
 
       // scene.add( gltf.scene );
       plane.add(watch);
@@ -158,6 +159,7 @@ async function Run() {
   async function update() {
     const estimationConfig = { flipHorizontal: false };
     const hands = await detector.estimateHands(video, estimationConfig);
+    // console.log('hands -----> ', hands)
     if (hands[0]) {
       plane.visible = true;
 
@@ -194,46 +196,66 @@ async function Run() {
       const newScale = vecDistance * screenRatio * 0.005;
       plane.scale.set(newScale, newScale, newScale);
 
+      // for palm of the hand
+
+      var handOrientation = calcOrientationReverse(new THREE.Vector3(hands[0].keypoints3D[0].x, hands[0].keypoints3D[0].y, hands[0].keypoints3D[0].z),
+        new THREE.Vector3(hands[0].keypoints3D[5].x, hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z),
+        new THREE.Vector3(hands[0].keypoints3D[17].x, hands[0].keypoints3D[17].y, hands[0].keypoints3D[17].z));
+
+
       // for back of the hand
+      //   var handOrientation = calcOrientation(new THREE.Vector3(hands[0].keypoints[0].x, hands[0].keypoints[0].y, 0.5),
+      //     new THREE.Vector3(hands[0].keypoints[5].x, hands[0].keypoints[5].y, 0.5),
+      //     new THREE.Vector3(hands[0].keypoints[17].x, hands[0].keypoints[17].y, 0.5));
 
-      // let handOrientation = calcOrientation(new THREE.Vector3(hands[0].keypoints3D[0].x, hands[0].keypoints3D[0].y, hands[0].keypoints3D[0].z),
-      //     new THREE.Vector3(hands[0].keypoints3D[5].x, hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z),
-      //     new THREE.Vector3(hands[0].keypoints3D[17].x, hands[0].keypoints3D[17].y, hands[0].keypoints3D[17].z));
 
-      // for front of the hand
 
-      let handOrientation = calcOrientationReverse(
-        new THREE.Vector3(
-          hands[0].keypoints3D[0].x,
-          hands[0].keypoints3D[0].y,
-          hands[0].keypoints3D[0].z
-        ),
-        new THREE.Vector3(
-          hands[0].keypoints3D[5].x,
-          hands[0].keypoints3D[5].y,
-          hands[0].keypoints3D[5].z
-        ),
-        new THREE.Vector3(
-          hands[0].keypoints3D[17].x,
-          hands[0].keypoints3D[17].y,
-          hands[0].keypoints3D[17].z
-        )
-      );
+      // let handOrientation = calcOrientationReverse(
+      //   new THREE.Vector3(
+      //     hands[0].keypoints3D[0].x,
+      //     hands[0].keypoints3D[0].y,
+      //     hands[0].keypoints3D[0].z
+      //   ),
+      //   new THREE.Vector3(
+      //     hands[0].keypoints3D[5].x,
+      //     hands[0].keypoints3D[5].y,
+      //     hands[0].keypoints3D[5].z
+      //   ),
+      //   new THREE.Vector3(
+      //     hands[0].keypoints3D[17].x,
+      //     hands[0].keypoints3D[17].y,
+      //     hands[0].keypoints3D[17].z
+      //   )
+      // );
 
-      plane.lookAt(handOrientation);
+
+      // const quaternion = new THREE.Quaternion();
+      // quaternion.setFromAxisAngle( handOrientation, Math.PI / 2 );
+
+      // plane.applyQuaternion(quaternion);
+      // plane.quaternion.applyQuaternion(quaternion);
+
+      //   plane.setRotationFromAxisAngle(handOrientation);
+      // plane.lookAt(new THREE.Vector3(0, 0, 1));
+
 
       //Visualizing the Vector Direction
-      //   const dir = handOrientation;
-      //   dir.normalize();
-      //   const origin = plane.position;
-      //   const length = 1;
-      //   const hex = 0xffff00;
-      //   const arrowHelper = new THREE.ArrowHelper(dir, origin, length, hex);
+      const dir = handOrientation;
+      dir.normalize();
+      const origin = plane.position;
+      const length = 1;
+      const hex = 0xffff00;
+      const arrowHelper = new THREE.ArrowHelper(dir, origin, length, hex);
 
-      //   scene.add(arrowHelper);
-      //   setTimeout(() => {
-      //     scene.remove(arrowHelper);
-      //   }, 500);
+      //   plane.quaternion.rotateTowards(arrowHelper.quaternion,1);
+      plane.setRotationFromQuaternion(arrowHelper.quaternion);
+
+      //   plane.applyQuaternion(arrowHelper.quaternion)
+
+      scene.add(arrowHelper);
+      setTimeout(() => {
+        scene.remove(arrowHelper);
+      }, 500);
     } else {
       plane.visible = false;
     }
@@ -246,6 +268,44 @@ async function Run() {
 
     renderer.render(scene, camera);
     requestAnimationFrame(update);
+  }
+
+  function getHandStatus(hand) {
+    const handedness = hand.handedness;
+    const c0 = hand.keypoints3D[0];
+    const c5 = hand.keypoints3D[5];
+    const c17 = hand.keypoints3D[17];
+    if (handedness === 'Right') {
+      if (c5.x > c17.x) return 'right-palm';
+      else return 'right-back';
+    }
+    else {
+      if (c5.x > c17.x) return 'left-b';
+      else return 'left-back';
+    }
+
+  }
+
+  function calcPhi(Xc, Yc, Xp, Yp, Zp) {
+    const r = Math.sqrt(Math.pow(Xp - Xc, 2) + Math.pow(Yp - Yc, 2));
+    const R = Math.sqrt(Math.pow(Zc, 2) + Math.pow(r, 2));
+    const phi = Math.acos(r / R);
+    return phi;
+  }
+
+  function calcOrientation(CP0, CP5, CP17) {
+    var keyPoint1 = new THREE.Vector3();
+    var keyPoint2 = new THREE.Vector3();
+    keyPoint1.subVectors(CP17, CP0);
+    keyPoint2.subVectors(CP5, CP17);
+    let normalVector = new THREE.Vector3(
+      - (keyPoint1.y * keyPoint2.z) + (keyPoint1.z * keyPoint2.y),
+      (Math.abs(keyPoint1.z) * keyPoint2.x) - (keyPoint1.x * keyPoint2.z),
+      (keyPoint1.x * keyPoint2.y) - (keyPoint1.y * keyPoint2.x)
+    );
+
+    normalVector.normalize();
+    return normalVector;
   }
 
   function calcOrientationReverse(CP0, CP5, CP17) {
