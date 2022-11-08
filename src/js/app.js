@@ -198,15 +198,21 @@ async function Run() {
 
       // for palm of the hand
       const handStatus = getHandStatus(hands[0]);
-      if(handStatus === "left-back" || handStatus === "right-palm"){
-        var handOrientation = calcOrientation(hands[0]);
+      if((handStatus === "left-back") || (handStatus === "right-palm")){
+        var handOrientation = calcOrientation(hands[0].keypoints3D[0], hands[0].keypoints3D[5], hands[0].keypoints3D[17]);
+        var handOrientation2 = calcOrientation(hands[0].keypoints3D[0], hands[0].keypoints3D[9], hands[0].keypoints3D[17]);
+        var handOrientation3 = calcOrientation(hands[0].keypoints3D[0], hands[0].keypoints3D[13], hands[0].keypoints3D[17]);
+        var handOrientation4 = calcOrientation(hands[0].keypoints3D[0], hands[0].keypoints3D[5], hands[0].keypoints3D[13]);
       } else {
-        var handOrientation = calcOrientationReverse(hands[0]);
+        var handOrientation = calcOrientationReverse(hands[0].keypoints3D[0], hands[0].keypoints3D[5], hands[0].keypoints3D[17]);
+        var handOrientation2 = calcOrientationReverse(hands[0].keypoints3D[0], hands[0].keypoints3D[9], hands[0].keypoints3D[17]);
+        var handOrientation3 = calcOrientationReverse(hands[0].keypoints3D[0], hands[0].keypoints3D[13], hands[0].keypoints3D[17]);
+        var handOrientation4 = calcOrientationReverse(hands[0].keypoints3D[0], hands[0].keypoints3D[5], hands[0].keypoints3D[13]);
       }
 
-      console.log(handOrientation.y);
+      // console.log(handOrientation.y);
 
-      console.log(handStatus);
+      // console.log(handStatus);
 
       // for back of the hand
       //   var handOrientation = calcOrientation(hand].keypoints[0].x, hands[0].keypoints[0].y, 0.5),
@@ -236,22 +242,15 @@ async function Run() {
 
 
       //Visualizing the Vector Direction
-      const dir = handOrientation;
-      dir.normalize();
-      const origin = plane.position;
-      const length = 1;
-      const hex = 0xffff00;
-      const arrowHelper = new THREE.ArrowHelper(dir, origin, length, hex);
+      visVecDir(handOrientation, scene, 0xffff00);
+      visVecDir(handOrientation2, scene, 0xff5550);
+      visVecDir(handOrientation3, scene, 0xfdd550);
+      visVecDir(handOrientation4, scene, 0xeee550);
 
-      //   plane.quaternion.rotateTowards(arrowHelper.quaternion,1);
-      plane.setRotationFromQuaternion(arrowHelper.quaternion);
+      // vector summation
+      visVecDir(handOrientation.clone().add(handOrientation2.clone().add(handOrientation3.clone().add(handOrientation4))), scene, 0xeeeeee);
 
-      //   plane.applyQuaternion(arrowHelper.quaternion)
 
-      scene.add(arrowHelper);
-      setTimeout(() => {
-        scene.remove(arrowHelper);
-      }, 500);
     } else {
       plane.visible = false;
     }
@@ -264,6 +263,24 @@ async function Run() {
 
     renderer.render(scene, camera);
     requestAnimationFrame(update);
+  }
+
+  function visVecDir(handOrientation, scene, color=0xffff00) {
+    const dir = handOrientation;
+    dir.normalize();
+    const origin = plane.position;
+    const length = 1;
+    const arrowHelper = new THREE.ArrowHelper(dir, origin, length, color);
+
+    //   plane.quaternion.rotateTowards(arrowHelper.quaternion,1);
+    plane.setRotationFromQuaternion(arrowHelper.quaternion);
+
+    //   plane.applyQuaternion(arrowHelper.quaternion)
+
+    scene.add(arrowHelper);
+    setTimeout(() => {
+      scene.remove(arrowHelper);
+    }, 500);
   }
 
   function getHandStatus(hand) {
@@ -289,34 +306,28 @@ async function Run() {
     return phi;
   }
 
-  function calcOrientation(hand) {
-    const c0 = hand.keypoints3D[0];
-    const c5 = hand.keypoints3D[5];
-    const c17 = hand.keypoints3D[17];
+  function calcOrientation(p1, p2, p3) {
     var keyPoint1 = new THREE.Vector3();
     var keyPoint2 = new THREE.Vector3();
-    keyPoint1.subVectors(c17, c0);
-    keyPoint2.subVectors(c5, c17);
+    keyPoint1.subVectors(p1, p3);
+    keyPoint2.subVectors(p1, p2);
     let normalVector = new THREE.Vector3(
-      - (keyPoint1.y * keyPoint2.z) + (keyPoint1.z * keyPoint2.y),
-      (keyPoint1.z * keyPoint2.x) - (keyPoint1.x * keyPoint2.z),
-      (keyPoint1.x * keyPoint2.y) - (keyPoint1.y * keyPoint2.x)
+      - keyPoint1.y * keyPoint2.z + keyPoint1.z * keyPoint2.y,
+      keyPoint1.z * keyPoint2.x - keyPoint1.x * keyPoint2.z,
+      keyPoint1.x * keyPoint2.y - keyPoint1.y * keyPoint2.x
     );
 
     normalVector.normalize();
     return normalVector;
   }
 
-  function calcOrientationReverse(hand) {
-    const c0 = hand.keypoints3D[0];
-    const c5 = hand.keypoints3D[5];
-    const c17 = hand.keypoints3D[17];
+  function calcOrientationReverse(p1, p2, p3) {
     let keyPoint1 = new THREE.Vector3();
     let keyPoint2 = new THREE.Vector3();
-    keyPoint1.subVectors(c17, c5);
-    keyPoint2.subVectors(c0, c17);
+    keyPoint1.subVectors(p1, p3);
+    keyPoint2.subVectors(p1, p2);
     let normalVector = new THREE.Vector3(
-      -(keyPoint1.y * keyPoint2.z) + keyPoint1.z * keyPoint2.y,
+      - keyPoint1.y * keyPoint2.z + keyPoint1.z * keyPoint2.y,
       keyPoint1.z * keyPoint2.x - keyPoint1.x * keyPoint2.z,
       keyPoint1.x * keyPoint2.y - keyPoint1.y * keyPoint2.x
     );
