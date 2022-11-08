@@ -45,3 +45,8 @@ canvas[data-engine~='three.js'] {
 video {
   height: 100%;
 }
+
+.dg.ac {
+  position: relative;
+  z-index: 100000;
+}
