@@ -1,10 +1,13 @@
 import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
 import '@tensorflow/tfjs-backend-webgl'; // Register WebGL backend.
 import '../scss/app.scss';
+import { GUI } from 'dat.gui';
 
 const THREE = require('three');
 const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader');
 const { OrbitControls } = require('three/examples/jsm/controls/OrbitControls');
+
+const degree = Math.PI / 180;
 
 async function Run() {
   // Media variables
@@ -79,11 +82,21 @@ async function Run() {
     wireframe: true,
   });
   const plane = new THREE.Mesh(geometry, material);
+  plane.visible = false;
   scene.add(plane);
 
   const axesHelper = new THREE.AxesHelper(1);
   plane.add(axesHelper);
 
+  const gui = new GUI();
+  const watchFolder = gui.addFolder('Watch');
+  let watchRotation = {
+    x: 180,
+    y: 90,
+    z: 180,
+  };
+
+  let watch = null;
   // let box = new THREE.Object3D()
   const loader = new GLTFLoader();
   // Load a glTF resource
@@ -93,10 +106,15 @@ async function Run() {
     // 'https://firebasestorage.googleapis.com/v0/b/tripleearplatform.appspot.com/o/TestGLB%2Fwatch%2Fscene.gltf?alt=media&token=cbd75ea2-9525-47bc-981c-8e3f5d4a2af6',
     // called when the resource is loaded
     function (gltf) {
-      const watch = gltf.scene;
+      watch = gltf.scene;
 
       watch.scale.set(5, 5, 5);
-      watch.rotation.set(5, 5, 5);
+      watch.rotation.set(180 * degree, 90 * degree, 80 * degree);
+
+      watchFolder.add(watchRotation, 'x', 0, 360, 1);
+      watchFolder.add(watchRotation, 'y', 0, 360, 1);
+      watchFolder.add(watchRotation, 'z', 0, 360, 1);
+      watchFolder.open();
 
       let ambientLight = new THREE.AmbientLight(
         new THREE.Color('hsl(0, 0%, 100%)'),
@@ -218,6 +236,12 @@ async function Run() {
       //   }, 500);
     } else {
       plane.visible = false;
+    }
+
+    if (watch) {
+      watch.rotation.x = watchRotation.x * degree;
+      watch.rotation.y = watchRotation.y * degree;
+      watch.rotation.z = watchRotation.z * degree;
     }
 
     renderer.render(scene, camera);
