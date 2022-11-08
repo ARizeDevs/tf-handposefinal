@@ -199,13 +199,9 @@ async function Run() {
       // for palm of the hand
       const handStatus = getHandStatus(hands[0]);
       if(handStatus === "left-back" || handStatus === "right-palm"){
-        var handOrientation = calcOrientation(new THREE.Vector3(hands[0].keypoints3D[0].x, hands[0].keypoints3D[0].y, hands[0].keypoints3D[0].z),
-        new THREE.Vector3(hands[0].keypoints3D[5].x, hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z),
-        new THREE.Vector3(hands[0].keypoints3D[17].x, hands[0].keypoints3D[17].y, hands[0].keypoints3D[17].z));
+        var handOrientation = calcOrientation(hands[0]);
       } else {
-        var handOrientation = calcOrientationReverse(new THREE.Vector3(hands[0].keypoints3D[0].x, hands[0].keypoints3D[0].y, hands[0].keypoints3D[0].z),
-        new THREE.Vector3(hands[0].keypoints3D[5].x, hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z),
-        new THREE.Vector3(hands[0].keypoints3D[17].x, hands[0].keypoints3D[17].y, hands[0].keypoints3D[17].z));
+        var handOrientation = calcOrientationReverse(hands[0]);
       }
 
       console.log(handOrientation.y);
@@ -213,7 +209,7 @@ async function Run() {
       console.log(handStatus);
 
       // for back of the hand
-      //   var handOrientation = calcOrientation(new THREE.Vector3(hands[0].keypoints[0].x, hands[0].keypoints[0].y, 0.5),
+      //   var handOrientation = calcOrientation(hand].keypoints[0].x, hands[0].keypoints[0].y, 0.5),
       //     new THREE.Vector3(hands[0].keypoints[5].x, hands[0].keypoints[5].y, 0.5),
       //     new THREE.Vector3(hands[0].keypoints[17].x, hands[0].keypoints[17].y, 0.5));
 
@@ -293,14 +289,17 @@ async function Run() {
     return phi;
   }
 
-  function calcOrientation(CP0, CP5, CP17) {
+  function calcOrientation(hand) {
+    const c0 = hand.keypoints3D[0];
+    const c5 = hand.keypoints3D[5];
+    const c17 = hand.keypoints3D[17];
     var keyPoint1 = new THREE.Vector3();
     var keyPoint2 = new THREE.Vector3();
-    keyPoint1.subVectors(CP17, CP0);
-    keyPoint2.subVectors(CP5, CP17);
+    keyPoint1.subVectors(c17, c0);
+    keyPoint2.subVectors(c5, c17);
     let normalVector = new THREE.Vector3(
       - (keyPoint1.y * keyPoint2.z) + (keyPoint1.z * keyPoint2.y),
-      (Math.abs(keyPoint1.z) * keyPoint2.x) - (keyPoint1.x * keyPoint2.z),
+      (keyPoint1.z * keyPoint2.x) - (keyPoint1.x * keyPoint2.z),
       (keyPoint1.x * keyPoint2.y) - (keyPoint1.y * keyPoint2.x)
     );
 
@@ -308,14 +307,17 @@ async function Run() {
     return normalVector;
   }
 
-  function calcOrientationReverse(CP0, CP5, CP17) {
+  function calcOrientationReverse(hand) {
+    const c0 = hand.keypoints3D[0];
+    const c5 = hand.keypoints3D[5];
+    const c17 = hand.keypoints3D[17];
     let keyPoint1 = new THREE.Vector3();
     let keyPoint2 = new THREE.Vector3();
-    keyPoint1.subVectors(CP17, CP5);
-    keyPoint2.subVectors(CP0, CP17);
+    keyPoint1.subVectors(c17, c5);
+    keyPoint2.subVectors(c0, c17);
     let normalVector = new THREE.Vector3(
       -(keyPoint1.y * keyPoint2.z) + keyPoint1.z * keyPoint2.y,
-      Math.abs(keyPoint1.z) * keyPoint2.x - keyPoint1.x * keyPoint2.z,
+      keyPoint1.z * keyPoint2.x - keyPoint1.x * keyPoint2.z,
       keyPoint1.x * keyPoint2.y - keyPoint1.y * keyPoint2.x
     );
     normalVector.normalize();
