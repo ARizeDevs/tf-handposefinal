@@ -204,11 +204,6 @@ async function Run() {
 
 
       // for back of the hand
-      //   var handOrientation = calcOrientation(new THREE.Vector3(hands[0].keypoints[0].x, hands[0].keypoints[0].y, 0.5),
-      //     new THREE.Vector3(hands[0].keypoints[5].x, hands[0].keypoints[5].y, 0.5),
-      //     new THREE.Vector3(hands[0].keypoints[17].x, hands[0].keypoints[17].y, 0.5));
-
-
 
       // let handOrientation = calcOrientationReverse(
       //   new THREE.Vector3(
@@ -228,15 +223,6 @@ async function Run() {
       //   )
       // );
 
-
-      // const quaternion = new THREE.Quaternion();
-      // quaternion.setFromAxisAngle( handOrientation, Math.PI / 2 );
-
-      // plane.applyQuaternion(quaternion);
-      // plane.quaternion.applyQuaternion(quaternion);
-
-      //   plane.setRotationFromAxisAngle(handOrientation);
-      // plane.lookAt(new THREE.Vector3(0, 0, 1));
 
 
       //Visualizing the Vector Direction
