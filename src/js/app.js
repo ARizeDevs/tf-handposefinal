@@ -248,8 +248,10 @@ async function Run() {
       visVecDir(handOrientation4, scene, 0xeee550);
 
       // vector summation
-      visVecDir(handOrientation.clone().add(handOrientation2.clone().add(handOrientation3.clone().add(handOrientation4))), scene, 0xeeeeee);
-
+      var sumVector = handOrientation.clone();
+      sumVector.add(handOrientation2.clone().add(handOrientation3.clone().add(handOrientation4)));
+      visVecDir(sumVector, scene, 0xFF0000);
+      // even we can normalize the sum vector
 
     } else {
       plane.visible = false;
