@@ -1,8 +1,10 @@
 import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
+import {handLandmarksToRect} from '@tensorflow-models/hand-pose-detection/dist/tfjs/calculators/hand_landmarks_to_rect';
 import '@tensorflow/tfjs-backend-webgl'; // Register WebGL backend.
 import '../scss/app.scss';
 import { GUI } from 'dat.gui';
 import { PlatformBrowser } from '@tensorflow/tfjs-core/dist/platforms/platform_browser';
+import { math } from '@tensorflow/tfjs-core';
 
 const THREE = require('three');
 const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader');
@@ -27,7 +29,7 @@ async function Run() {
   const detectorConfig = {
     runtime: 'mediapipe',
     solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands',
-    modelType: 'lite',
+    modelType: 'full',
     maxHands: 1,
   };
   const model = handPoseDetection.SupportedModels.MediaPipeHands;
@@ -35,6 +37,8 @@ async function Run() {
     model,
     detectorConfig
   );
+
+    
 
   // Setting up the stream
   const streamSettings = stream.getVideoTracks()[0].getSettings();
@@ -77,13 +81,13 @@ async function Run() {
   document.body.appendChild(renderer.domElement);
   // const controls = new OrbitControls(camera, renderer.domElement);
 
-  const geometry = new THREE.PlaneGeometry(0.5, 0.5);
+  const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.2);
   const material = new THREE.MeshBasicMaterial({
     color: 0x000000,
     wireframe: true,
   });
   const plane = new THREE.Mesh(geometry, material);
-  plane.visible = false;
+  plane.visible = true;
   scene.add(plane);
 
   const axesHelper = new THREE.AxesHelper(1);
@@ -92,9 +96,9 @@ async function Run() {
   const gui = new GUI();
   const watchFolder = gui.addFolder('Watch');
   let watchRotation = {
-    x: 180,
-    y: 90,
-    z: 180,
+    x: 0,
+    y: 0,
+    z: 0,
   };
 
   let watch = null;
@@ -109,13 +113,15 @@ async function Run() {
     function (gltf) {
       watch = gltf.scene;
 
-      watch.scale.set(5, 5, 5);
-      watch.rotation.set(180 * degree, 90 * degree, 80 * degree);
+      watch.scale.set(10, 10, 10);
+    //   watch.rotation.set(180 * degree, 90 * degree, 80 * degree);
 
       watchFolder.add(watchRotation, 'x', 0, 360, 1);
       watchFolder.add(watchRotation, 'y', 0, 360, 1);
       watchFolder.add(watchRotation, 'z', 0, 360, 1);
       watchFolder.open();
+
+    watch.visible = false;
 
       // let ambientLight = new THREE.AmbientLight(
       //   new THREE.Color('hsl(0, 0%, 100%)'),
@@ -138,7 +144,8 @@ async function Run() {
       // gltf.scene.add(directionalLightFront);
 
       // scene.add( gltf.scene );
-      plane.add(watch);
+    //   plane.add(watch);
+        scene.add(watch);
 
       gltf.animations; // Array<THREE.AnimationClip>
       gltf.scene; // THREE.Group
@@ -159,31 +166,37 @@ async function Run() {
   async function update() {
     const estimationConfig = { flipHorizontal: false };
     const hands = await detector.estimateHands(video, estimationConfig);
+
+    
     // console.log('hands -----> ', hands)
+
     if (hands[0]) {
-      plane.visible = true;
 
-      const keyPoint0 = hands[0].keypoints[0];
-      const keyPoint9 = hands[0].keypoints[9];
+        const keyPoint0 = hands[0].keypoints[0];
+        const keyPoint9 = hands[0].keypoints[9];
 
-      let wristVec = new THREE.Vector3(-keyPoint0.x, keyPoint0.y, 0.5);
-      let MiddleRootVec = new THREE.Vector3(-keyPoint9.x, keyPoint9.y, 0.5);
+        let rect = handLandmarksToRect(hands[0].keypoints, video);
+        console.log(rect);
 
-      let vecDistance = wristVec.distanceTo(MiddleRootVec);
-      let vec = new THREE.Vector3();
-      let pos = new THREE.Vector3();
 
-      vec.set(
-        (keyPoint0.x / streamWidth) * 2 - 1,
-        -(keyPoint0.y / streamHeight) * 2 + 1,
-        0.5
-      );
-      vec.unproject(camera);
-      vec.sub(camera.position).normalize();
-      const distance = -camera.position.z / vec.z;
-      pos.copy(camera.position).add(vec.multiplyScalar(distance));
-      plane.position.x = pos.x;
-      plane.position.y = pos.y;
+        let wristVec = new THREE.Vector3(-keyPoint0.x, keyPoint0.y, 0.5);
+        let MiddleRootVec = new THREE.Vector3(-keyPoint9.x, keyPoint9.y, 0.5);
+
+        let vecDistance = wristVec.distanceTo(MiddleRootVec);
+        let vec = new THREE.Vector3();
+        let pos = new THREE.Vector3();
+
+        vec.set(
+            (keyPoint0.x / streamWidth) * 2 - 1,
+            -(keyPoint0.y / streamHeight) * 2 + 1,
+            0.5
+        );
+        vec.unproject(camera);
+        vec.sub(camera.position).normalize();
+        const distance = -camera.position.z / vec.z;
+        pos.copy(camera.position).add(vec.multiplyScalar(distance));
+        plane.position.x = pos.x;
+        plane.position.y = pos.y;
 
       let screenRatio = null;
       if (streamWidth > streamHeight) {
@@ -196,71 +209,21 @@ async function Run() {
       const newScale = vecDistance * screenRatio * 0.005;
       plane.scale.set(newScale, newScale, newScale);
 
+      plane.setRotationFromAxisAngle(plane.up, rect.rotation);
+
       // for palm of the hand
       const handStatus = getHandStatus(hands[0]);
       if((handStatus === "left-back") || (handStatus === "right-palm")){
         var handOrientation = calcOrientation(hands[0].keypoints3D[0], hands[0].keypoints3D[5], hands[0].keypoints3D[17]);
-        var handOrientation2 = calcOrientation(hands[0].keypoints3D[0], hands[0].keypoints3D[9], hands[0].keypoints3D[17]);
-        var handOrientation3 = calcOrientation(hands[0].keypoints3D[0], hands[0].keypoints3D[13], hands[0].keypoints3D[17]);
-        var handOrientation4 = calcOrientation(hands[0].keypoints3D[0], hands[0].keypoints3D[5], hands[0].keypoints3D[13]);
       } else {
         var handOrientation = calcOrientationReverse(hands[0].keypoints3D[0], hands[0].keypoints3D[5], hands[0].keypoints3D[17]);
-        var handOrientation2 = calcOrientationReverse(hands[0].keypoints3D[0], hands[0].keypoints3D[9], hands[0].keypoints3D[17]);
-        var handOrientation3 = calcOrientationReverse(hands[0].keypoints3D[0], hands[0].keypoints3D[13], hands[0].keypoints3D[17]);
-        var handOrientation4 = calcOrientationReverse(hands[0].keypoints3D[0], hands[0].keypoints3D[5], hands[0].keypoints3D[13]);
+        
       }
 
-      // console.log(handOrientation.y);
-
-      // console.log(handStatus);
-
-      // for back of the hand
-      //   var handOrientation = calcOrientation(hand].keypoints[0].x, hands[0].keypoints[0].y, 0.5),
-      //     new THREE.Vector3(hands[0].keypoints[5].x, hands[0].keypoints[5].y, 0.5),
-      //     new THREE.Vector3(hands[0].keypoints[17].x, hands[0].keypoints[17].y, 0.5));
-
-
-
-      // let handOrientation = calcOrientationReverse(
-      //   new THREE.Vector3(
-      //     hands[0].keypoints3D[0].x,
-      //     hands[0].keypoints3D[0].y,
-      //     hands[0].keypoints3D[0].z
-      //   ),
-      //   new THREE.Vector3(
-      //     hands[0].keypoints3D[5].x,
-      //     hands[0].keypoints3D[5].y,
-      //     hands[0].keypoints3D[5].z
-      //   ),
-      //   new THREE.Vector3(
-      //     hands[0].keypoints3D[17].x,
-      //     hands[0].keypoints3D[17].y,
-      //     hands[0].keypoints3D[17].z
-      //   )
-      // );
-
-
-
-      //Visualizing the Vector Direction
       visVecDir(handOrientation, scene, 0xffff00);
-      visVecDir(handOrientation2, scene, 0xff5550);
-      visVecDir(handOrientation3, scene, 0xfdd550);
-      visVecDir(handOrientation4, scene, 0xeee550);
-
-      // vector summation
-      var sumVector = handOrientation.clone();
-      sumVector.add(handOrientation2.clone().add(handOrientation3.clone().add(handOrientation4)));
-      visVecDir(sumVector, scene, 0xFF0000);
-      // even we can normalize the sum vector
 
     } else {
-      plane.visible = false;
-    }
-
-    if (watch) {
-      watch.rotation.x = watchRotation.x * degree;
-      watch.rotation.y = watchRotation.y * degree;
-      watch.rotation.z = watchRotation.z * degree;
+      // plane.visible = false;
     }
 
     renderer.render(scene, camera);
@@ -269,17 +232,15 @@ async function Run() {
 
   function visVecDir(handOrientation, scene, color=0xffff00) {
     const dir = handOrientation;
-    dir.normalize();
+    // dir.normalize();
     const origin = plane.position;
     const length = 1;
     const arrowHelper = new THREE.ArrowHelper(dir, origin, length, color);
-
-    //   plane.quaternion.rotateTowards(arrowHelper.quaternion,1);
-    plane.setRotationFromQuaternion(arrowHelper.quaternion);
-
-    //   plane.applyQuaternion(arrowHelper.quaternion)
-
     scene.add(arrowHelper);
+
+        
+    // plane.lookAt(arrowHelper.position);
+    
     setTimeout(() => {
       scene.remove(arrowHelper);
     }, 500);
@@ -319,9 +280,10 @@ async function Run() {
       keyPoint1.x * keyPoint2.y - keyPoint1.y * keyPoint2.x
     );
 
-    normalVector.normalize();
+    // normalVector.normalize();
     return normalVector;
   }
+
 
   function calcOrientationReverse(p1, p2, p3) {
     let keyPoint1 = new THREE.Vector3();
