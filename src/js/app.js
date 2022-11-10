@@ -239,9 +239,9 @@ async function Run() {
       
    
       // plane.rotation.set(currentVector.x,currentVector.y,currentVector.z);
-      plane.rotation.x = THREE.MathUtils.radToDeg(-currentVector.x);
-      plane.rotation.y = THREE.MathUtils.radToDeg(-currentVector.y);
-      plane.rotation.z = THREE.MathUtils.radToDeg(-currentVector.z);
+      // plane.rotation.x = THREE.MathUtils.radToDeg(-currentVector.x);
+      // plane.rotation.y = THREE.MathUtils.radToDeg(-currentVector.y);
+      // plane.rotation.z = THREE.MathUtils.radToDeg(-currentVector.z);
 
       // plane.rotateX(currentVector.x);
       // plane.rotateY(currentVector.y);
