@@ -10,6 +10,9 @@ const THREE = require('three');
 const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader');
 const { OrbitControls } = require('three/examples/jsm/controls/OrbitControls');
 
+const initVector = new THREE.Vector3();
+const currentVector = new THREE.Vector3();
+
 const degree = Math.PI / 180;
 
 async function Run() {
@@ -31,6 +34,7 @@ async function Run() {
     solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands',
     modelType: 'full',
     maxHands: 1,
+    staticImageMode: true
   };
   const model = handPoseDetection.SupportedModels.MediaPipeHands;
   const detector = await handPoseDetection.createDetector(
@@ -175,8 +179,11 @@ async function Run() {
         const keyPoint0 = hands[0].keypoints[0];
         const keyPoint9 = hands[0].keypoints[9];
 
-        let rect = handLandmarksToRect(hands[0].keypoints, video);
-        console.log(rect);
+
+        const keyPoint3D0 = hands[0].keypoints3D[0];
+
+        // let rect = handLandmarksToRect(hands[0].keypoints, video);
+        // console.log(rect);
 
 
         let wristVec = new THREE.Vector3(-keyPoint0.x, keyPoint0.y, 0.5);
@@ -198,6 +205,9 @@ async function Run() {
         plane.position.x = pos.x;
         plane.position.y = pos.y;
 
+
+
+
       let screenRatio = null;
       if (streamWidth > streamHeight) {
         // landscape
@@ -209,7 +219,35 @@ async function Run() {
       const newScale = vecDistance * screenRatio * 0.005;
       plane.scale.set(newScale, newScale, newScale);
 
-      plane.setRotationFromAxisAngle(plane.up, rect.rotation);
+      // console.log(newScale);
+
+      if(initVector === null){
+        const writstPoint = new THREE.Vector3(hands[0].keypoints3D[17].x,hands[0].keypoints3D[17].y, hands[0].keypoints3D[17].z);
+        const IndexPoint = new THREE.Vector3(hands[0].keypoints3D[5].x,hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z);
+
+        initVector.subVectors(IndexPoint, writstPoint);
+      }
+
+      const writstPoint = new THREE.Vector3(hands[0].keypoints3D[17].x,hands[0].keypoints3D[17].y, hands[0].keypoints3D[17].z);
+      const IndexPoint = new THREE.Vector3(hands[0].keypoints3D[5].x,hands[0].keypoints3D[5].y, hands[0].keypoints3D[5].z);
+
+      currentVector.subVectors(IndexPoint, writstPoint);
+
+      currentVector.angleTo(initVector);
+
+      console.log(currentVector.y);
+      
+   
+      // plane.rotation.set(currentVector.x,currentVector.y,currentVector.z);
+      plane.rotation.x = THREE.MathUtils.radToDeg(-currentVector.x);
+      plane.rotation.y = THREE.MathUtils.radToDeg(-currentVector.y);
+      plane.rotation.z = THREE.MathUtils.radToDeg(-currentVector.z);
+
+      // plane.rotateX(currentVector.x);
+      // plane.rotateY(currentVector.y);
+      // plane.rotateZ(currentVector.Z);
+
+      // plane.setRotationFromAxisAngle(plane.position, rect.rotation);
 
       // for palm of the hand
       const handStatus = getHandStatus(hands[0]);
@@ -220,7 +258,7 @@ async function Run() {
         
       }
 
-      visVecDir(handOrientation, scene, 0xffff00);
+      // visVecDir(handOrientation, scene, 0xffff00);
 
     } else {
       // plane.visible = false;
@@ -233,10 +271,10 @@ async function Run() {
   function visVecDir(handOrientation, scene, color=0xffff00) {
     const dir = handOrientation;
     // dir.normalize();
-    const origin = plane.position;
-    const length = 1;
-    const arrowHelper = new THREE.ArrowHelper(dir, origin, length, color);
-    scene.add(arrowHelper);
+    // const origin = plane.position;
+    // const length = 1;
+    // const arrowHelper = new THREE.ArrowHelper(dir, origin, length, color);
+    // scene.add(arrowHelper);
 
         
     // plane.lookAt(arrowHelper.position);
